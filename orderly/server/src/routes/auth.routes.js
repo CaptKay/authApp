@@ -1,5 +1,7 @@
 import "dotenv/config";
 import express from "express";
+import rateLimit from 'express-rate-limit'
+
 import User from "../models/User.js";
 import Role from "../models/Role.js";
 import { hashPassword, verifyPassword } from "../utils/hash.js";
@@ -24,6 +26,24 @@ import { generateBackupCodes, hashBackupCodes } from "../utils/backupCodes.js";
 import { matchAndRemoveBackupCode } from "../utils/backupCodes.js";
 
 const router = express.Router();
+
+const loginLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {errorMessage: 'Too many login attempts. Try again later.'}
+})
+
+const forgotLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {errorMessage: 'Too many login attempts. Try again later.'}
+})
+
+
 
 //SIGNUP ROUTE
 router.post("/register", async (req, res) => {
@@ -112,7 +132,7 @@ router.get("/verify-email", async (req, res) => {
 });
 
 //LOGIN ROUTE
-router.post("/login", async (req, res) => {
+router.post("/login", loginLimit,async (req, res) => {
   const { email, password } = req.body;
 
   //1. find user and populate roles + permissins
@@ -311,7 +331,7 @@ router.post("/2fa/disable", requireAuth, async (req, res) => {
 });
 
 //FORGOT PASSWORD
-router.post("/forgot-password", async (req, res) => {
+router.post("/forgot-password", forgotLimit,async (req, res) => {
   try {
     const { email } = req.body || {};
     if (!email)
