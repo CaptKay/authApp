@@ -1,6 +1,5 @@
 import "dotenv/config";
 import express from "express";
-import rateLimit from 'express-rate-limit'
 
 import User from "../models/User.js";
 import Role from "../models/Role.js";
@@ -24,26 +23,15 @@ import QRCode from "qrcode";
 import { requireAuth } from "../auth/middleware.js";
 import { generateBackupCodes, hashBackupCodes } from "../utils/backupCodes.js";
 import { matchAndRemoveBackupCode } from "../utils/backupCodes.js";
+import {
+  loginLimit,
+  forgotLimit,
+  refreshLimit,
+  verifyLimit,
+} from "../utils/rateLimit.js";
+import { audit } from "../utils/audit.js";
 
 const router = express.Router();
-
-const loginLimit = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: {errorMessage: 'Too many login attempts. Try again later.'}
-})
-
-const forgotLimit = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 5,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: {errorMessage: 'Too many login attempts. Try again later.'}
-})
-
-
 
 //SIGNUP ROUTE
 router.post("/register", async (req, res) => {
@@ -106,7 +94,7 @@ router.post("/register", async (req, res) => {
 });
 
 //VERIFY EMAIL
-router.get("/verify-email", async (req, res) => {
+router.get("/verify-email", verifyLimit, async (req, res) => {
   const { token, email } = req.query || {};
   if (!token || !email)
     return res.status(400).json({ errorMessage: "Missing token/email" });
@@ -128,11 +116,14 @@ router.get("/verify-email", async (req, res) => {
   user.emailVerifyTokenExpiresAt = undefined;
   await user.save();
 
+  //AuditLog
+  await audit({ userId: user._id, event: "email.verified", req });
+
   return res.status(200).json({ ok: true, message: "Email verified" });
 });
 
 //LOGIN ROUTE
-router.post("/login", loginLimit,async (req, res) => {
+router.post("/login", loginLimit, async (req, res) => {
   const { email, password } = req.body;
 
   //1. find user and populate roles + permissins
@@ -140,7 +131,10 @@ router.post("/login", loginLimit,async (req, res) => {
     path: "roles",
     populate: "permissions",
   });
-  if (!user) return res.status(401).json({ error: "Invalid credentials" });
+  if (!user) {
+    await audit({ event: "login.failed", req, meta: { email } });
+    return res.status(401).json({ error: "Invalid credentials" });
+  }
 
   //2. CHECK VERIFICATION STATUS
   if (!user.emailVerified)
@@ -175,6 +169,7 @@ router.post("/login", loginLimit,async (req, res) => {
     }
 
     if (!okTotp && !okBackup) {
+      await audit({ userId: user._id, event: "login.failed", req });
       return res.status(401).json({ error: "MFA required or invalid code" });
     }
 
@@ -219,6 +214,9 @@ router.post("/login", loginLimit,async (req, res) => {
 
   //7. set refresh cookie
   setRefreshCookie(res, refreshToken);
+
+  //AuditLog
+  await audit({ userId: user._id, event: "login.success", req });
 
   //8. send response with access token + user info
   res.status(200).json({
@@ -298,6 +296,8 @@ router.post("/2fa/enable", requireAuth, async (req, res) => {
     user.twoFactorEnabled = true;
     await user.save();
 
+    //AuditLog
+    await audit({ userId: user._id, event: "2fa.enabled", req });
     res.json({ ok: true });
   } catch (error) {
     console.error("[2fa/enable] failed: ", error);
@@ -324,6 +324,9 @@ router.post("/2fa/disable", requireAuth, async (req, res) => {
     user.twoFactorSecret = undefined;
     await user.save();
 
+    //AuditLog
+    await audit({ userId: user._id, event: "2fa.disabled", req });
+
     res.json({ ok: true });
   } catch (error) {
     console.error("[2fa/disable] failed: ", error);
@@ -331,7 +334,7 @@ router.post("/2fa/disable", requireAuth, async (req, res) => {
 });
 
 //FORGOT PASSWORD
-router.post("/forgot-password", forgotLimit,async (req, res) => {
+router.post("/forgot-password", forgotLimit, async (req, res) => {
   try {
     const { email } = req.body || {};
     if (!email)
@@ -374,6 +377,13 @@ router.post("/forgot-password", forgotLimit,async (req, res) => {
     }
 
     // 4) Always respond 200
+    await audit({
+      userId: user?._id,
+      event: "password.forgot.requested",
+      req,
+      meta: { email },
+    });
+
     return res.status(200).json({ ok: true });
   } catch (error) {
     console.error("[forgot-password] failed:", error);
@@ -421,6 +431,9 @@ router.post("/reset-password", async (req, res) => {
       }
     );
 
+    //AuditLog
+    await audit({ userId: user._id, event: "password.reset.success", req });
+
     return res.status(200).json({ ok: true });
   } catch (error) {
     console.error("[reset-password] failed:", error);
@@ -429,7 +442,7 @@ router.post("/reset-password", async (req, res) => {
 });
 
 //REFRESH ROUTE
-router.post("/refresh", async (req, res) => {
+router.post("/refresh", refreshLimit, async (req, res) => {
   try {
     //1. read refresh cookie
     const token = req.cookies?.refreshToken;
