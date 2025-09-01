@@ -30,6 +30,7 @@ import {
   verifyLimit,
 } from "../utils/rateLimit.js";
 import { audit } from "../utils/audit.js";
+import { pickHomePath } from "../auth/home.js";
 
 const router = express.Router();
 
@@ -212,6 +213,8 @@ router.post("/login", loginLimit, async (req, res) => {
   user.refreshTokens.push(refreshToken);
   await user.save();
 
+const nextPath = pickHomePath(roleNames)
+
   //7. set refresh cookie
   setRefreshCookie(res, refreshToken);
 
@@ -221,6 +224,7 @@ router.post("/login", loginLimit, async (req, res) => {
   //8. send response with access token + user info
   res.status(200).json({
     accessToken,
+    nextPath,
     user: {
       id: user._id,
       email: user.email,
@@ -495,7 +499,7 @@ router.post("/refresh", refreshLimit, async (req, res) => {
 
 //LOGOUT
 router.post("/logout", async (req, res) => {
-  const token = req.cookies?.refreshToken;
+  const token = req.cookies?.refreshToken || req.body?.refreshToken;
 
   if (token) {
     try {
