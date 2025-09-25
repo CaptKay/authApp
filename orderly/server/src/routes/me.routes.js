@@ -1,4 +1,4 @@
-// server/src/routes/me.routes.js
+
 import express from 'express';
 import { requireAuth } from '../auth/middleware.js';
 import { pickHomePath } from '../auth/home.js';
@@ -18,6 +18,7 @@ router.get('/', (req, res) => {
       roleNames,
       permissions: req.user.permissions || [],
     },
+
     nextPath: pickHomePath(roleNames),
   });
 });

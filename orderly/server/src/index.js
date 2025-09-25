@@ -29,6 +29,7 @@ const ALLOWED_ORIGINS = (process.env.CLIENT_ORIGINS || "http://localhost:5173")
 app.use(
   cors({
     origin: (origin, cb) => {
+
       // Allow requests with no origin (like Postman, curl)
       if (!origin) return cb(null, true);
 
@@ -37,6 +38,7 @@ app.use(
       }
 
       return cb(new Error("Not allowed by CORS"), false); 
+
     },
     credentials: true,
   })
@@ -50,11 +52,13 @@ app.use("/api", cookieParser());
 // Health Check
 app.get("/api/health", (_req, res) => res.status(200).json({ ok: true }));
 
+
 //Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/accounts", accountsRoutes);
 app.use("/api/sales", salesRoutes);
+
 app.use("/api/me", meRoutes);
 app.use("/api/admin", adminRoutes);
 
@@ -73,6 +77,7 @@ app.use((err, _req, res, _next) => {
 const PORT = process.env.PORT;
 try {
   await connectDB();
+
   app.listen(PORT, () => {
     console.log(`Server is running on port: ${PORT}`);
   });
