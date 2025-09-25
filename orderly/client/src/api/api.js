@@ -10,4 +10,12 @@ export function setAccessToken(token){
     api.defaults.headers.common['Authorization'] = token ? `Bearer ${token}` : ' ';
 }
 
+export async function fetchMe() {
+    const r = await api.get('/me')
+    return r.data
+}
+
 //Response interceptor: 401, try refresh once
+
+
+export default api

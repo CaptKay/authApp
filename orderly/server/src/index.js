@@ -10,7 +10,7 @@ import authRoutes from "./routes/auth.routes.js";
 import profileRoutes from "./routes/profile.routes.js";
 import accountsRoutes from "./routes/accounts.routes.js";
 import salesRoutes from "./routes/sales.routes.js";
-import meRoutes from "./routes/me.routes.js"
+import meRoutes from "./routes/me.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 
 // … your other imports
@@ -21,9 +21,6 @@ import "./models/User.js";
 const app = express();
 app.set("trust proxy", 1);
 
-// Health Check
-app.get("/health", (_req, res) => res.status(200).json({ ok: true }));
-
 //Middleware setup
 const ALLOWED_ORIGINS = (process.env.CLIENT_ORIGINS || "http://localhost:5173")
   .split(",")
@@ -32,9 +29,14 @@ const ALLOWED_ORIGINS = (process.env.CLIENT_ORIGINS || "http://localhost:5173")
 app.use(
   cors({
     origin: (origin, cb) => {
-      // allow no-origin requests (Postman, curl)
+      // Allow requests with no origin (like Postman, curl)
       if (!origin) return cb(null, true);
-      return cb(null, ALLOWED_ORIGINS.includes(origin));
+
+      if (ALLOWED_ORIGINS.includes(origin)) {
+        return cb(null, true);
+      }
+
+      return cb(new Error("Not allowed by CORS"), false); 
     },
     credentials: true,
   })
@@ -45,12 +47,15 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use("/api", cookieParser());
 
+// Health Check
+app.get("/api/health", (_req, res) => res.status(200).json({ ok: true }));
+
 //Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/accounts", accountsRoutes);
 app.use("/api/sales", salesRoutes);
-app.use('/api/me', meRoutes)
+app.use("/api/me", meRoutes);
 app.use("/api/admin", adminRoutes);
 
 //404 handler
@@ -67,7 +72,7 @@ app.use((err, _req, res, _next) => {
 // Coneection setup
 const PORT = process.env.PORT;
 try {
-await  connectDB();
+  await connectDB();
   app.listen(PORT, () => {
     console.log(`Server is running on port: ${PORT}`);
   });
