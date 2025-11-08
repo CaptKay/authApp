@@ -1,0 +1,58 @@
+:root {
+  color-scheme: light;
+  --bg: #f8fafc;
+  --surface: #ffffff;
+  --surface-border: #e2e8f0;
+  --text: #0f172a;
+  --text-muted: #475569;
+  --accent: #2563eb;
+  --accent-600: #1d4ed8;
+  --danger: #dc2626;
+  --code-bg: #0f172a;
+  --code-text: #f8fafc;
+  --input-bg: #ffffff;
+  --input-border: #cbd5f5;
+  --nav-bg: rgba(255, 255, 255, 0.75);
+  --nav-border: rgba(148, 163, 184, 0.5);
+  --shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+:root[data-theme='dark'],
+[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0b1020;
+  --surface: #12182b;
+  --surface-border: #26304a;
+  --text: #e6e8f0;
+  --text-muted: #9aa3b2;
+  --accent: #3b82f6;
+  --accent-600: #2563eb;
+  --danger: #f87171;
+  --code-bg: #0e1426;
+  --code-text: #e6e8f0;
+  --input-bg: #0e1426;
+  --input-border: #26304a;
+  --nav-bg: rgba(11, 16, 32, 0.85);
+  --nav-border: rgba(38, 48, 74, 0.9);
+  --shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  margin: 0;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+a {
+  color: var(--accent);
+}
+
+a:hover {
+  color: var(--accent-600);
+}
+
+button {
+  font-family: inherit;
+}

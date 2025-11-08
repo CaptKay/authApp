@@ -14,13 +14,38 @@ export default function AdminUsers() {
     return () => { on = false; };
   }, []);
 
-  if (status === 'loading') return <div style={{ padding: 24 }}>Loading users…</div>;
-  if (status === 'error') return <div style={{ padding: 24, color:'crimson' }}>{error}</div>;
+  if (status === 'loading') {
+    return (
+      <div className="page">
+        <section className="page__section">
+          <h2>Admin • Users</h2>
+          <p className="page__status">Loading users…</p>
+        </section>
+      </div>
+    );
+  }
+
+  if (status === 'error') {
+    return (
+      <div className="page">
+        <section className="page__section">
+          <h2>Admin • Users</h2>
+          <p className="page__status page__status--error">{error}</p>
+        </section>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ padding: 24 }}>
-      <h2>Admin • Users</h2>
-      {list.length === 0 ? <p>No users yet.</p> : <pre>{JSON.stringify(list, null, 2)}</pre>}
+    <div className="page">
+      <section className="page__section">
+        <h2>Admin • Users</h2>
+        <p className="page__status">Users pulled from the protected admin surface.</p>
+      </section>
+
+      <section className="page__section">
+        {list.length === 0 ? <p className="page__status">No users yet.</p> : <pre>{JSON.stringify(list, null, 2)}</pre>}
+      </section>
     </div>
   );
 }

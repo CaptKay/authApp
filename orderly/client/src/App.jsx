@@ -1,4 +1,4 @@
-import { Route, Routes, Navigate, Link } from "react-router-dom";
+import { Route, Routes, Navigate } from "react-router-dom";
 import Login from "./pages/Login.jsx";
 import ProtectedRoute from "./auth/ProtectedRoute.jsx";
 import Profile from "./pages/Profile.jsx";
@@ -8,52 +8,49 @@ import SalesOrders from "./pages/SalesOrders";
 import AdminUsers from './pages/AdminUsers';
 import Nav from "./components/Nav.jsx";
 
-
-
-
 function App() {
   return (
-    <>
-    <Nav />
+    <div className="app-shell">
+      <Nav />
+      <main className="app-content">
+        <Routes>
+          {/* public routes  */}
+          <Route path="/login" element={<Login />} />
 
-      <Routes>
-        {/* public routes  */}
-        <Route path="/login" element={<Login />} />
-
-        {/* protected routes group  */}
-        <Route element={<ProtectedRoute />}>
-          <Route path="/profile" element={<Profile />} />
-          {/* later: accounts, sales, admin go here too */}
-          <Route
-            path="/accounts/invoices"
-            element={
-              <RequirePermission needed="invoices:read">
-                <AccountsInvoices />
-              </RequirePermission>
-            }
-          />
-          <Route
-            path="/sales/orders"
-            element={
-              <RequirePermission needed="orders:read">
-                <SalesOrders />
-              </RequirePermission>
-            }
-          />
+          {/* protected routes group  */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/profile" element={<Profile />} />
             <Route
-            path="/admin"
-            element={
-              <RequirePermission needed="users:manage">
-                <AdminUsers />
-              </RequirePermission>
-            }
-          />
-        </Route>
+              path="/accounts/invoices"
+              element={
+                <RequirePermission needed="invoices:read">
+                  <AccountsInvoices />
+                </RequirePermission>
+              }
+            />
+            <Route
+              path="/sales/orders"
+              element={
+                <RequirePermission needed="orders:read">
+                  <SalesOrders />
+                </RequirePermission>
+              }
+            />
+            <Route
+              path="/admin"
+              element={
+                <RequirePermission needed="users:manage">
+                  <AdminUsers />
+                </RequirePermission>
+              }
+            />
+          </Route>
 
-        {/* fallback  */}
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </>
+          {/* fallback  */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </main>
+    </div>
   );
 }
 

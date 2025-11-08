@@ -1,20 +1,10 @@
-:root {
-  --bg: #0b1020;
-  --panel: #12182b;
-  --border: #26304a;
-  --text: #e6e8f0;
-  --muted: #9aa3b2;
-  --accent: #3b82f6;
-  --accent-600: #2563eb;
-  --danger: #ef4444;
-}
-
 html, body, #root {
   height: 100%;
   background: var(--bg);
   color: var(--text);
   margin: 0;
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 .auth-container {
@@ -22,27 +12,30 @@ html, body, #root {
   display: grid;
   place-items: center;
   padding: 2rem 1rem;
+  background: var(--bg);
 }
 
 .auth-card {
   width: 100%;
   max-width: 420px;
-  background: var(--panel);
-  border: 1px solid var(--border);
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
   border-radius: 14px;
   padding: 24px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+  box-shadow: var(--shadow);
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
 .auth-card h2 {
   margin: 0 0 14px;
   font-size: 1.4rem;
   font-weight: 600;
+  color: var(--text);
 }
 
 .auth-subtitle {
   margin: 0 0 18px;
-  color: var(--muted);
+  color: var(--text-muted);
   font-size: 0.95rem;
 }
 
@@ -55,21 +48,26 @@ html, body, #root {
 
 .field label {
   font-size: 0.85rem;
-  color: var(--muted);
+  color: var(--text-muted);
 }
 
 .field input {
-  background: #0e1426;
+  background: var(--input-bg);
   color: var(--text);
-  border: 1px solid var(--border);
+  border: 1px solid var(--input-border);
   border-radius: 10px;
   padding: 10px 12px;
   outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.field input::placeholder {
+  color: var(--text-muted);
 }
 
 .field input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 .actions {
@@ -87,15 +85,24 @@ html, body, #root {
   padding: 10px 14px;
   font-weight: 600;
   cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.btn:hover,
+.btn:focus {
+  background: var(--accent-600);
+  transform: translateY(-1px);
+  outline: none;
 }
 
 .btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
 .link {
-  color: var(--muted);
+  color: var(--text-muted);
   font-size: 0.9rem;
 }
 

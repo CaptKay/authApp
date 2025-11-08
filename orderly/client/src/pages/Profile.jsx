@@ -13,17 +13,32 @@ export default function Profile() {
       .catch((err) => console.error("Profile fetch failed", err));
   }, []);
 
-  return <div style={{padding: 24}}>
-<h2>Profile</h2>
-<section style={{ marginBottom: 20 }}>
-    <h4>Auth Context User:</h4>
-    <pre>{JSON.stringify(user, null, 2)}</pre>
-</section>
+  return (
+    <div className="page">
+      <section className="page__section">
+        <h2>Profile overview</h2>
+        <p className="page__status">
+          Review the authenticated user from context and the server response.
+        </p>
+      </section>
 
-<section style={{ marginBottom: 20 }}>
-<h4>Backend /profile response:</h4>
-{profile ? (<pre>{JSON.stringify(profile, null, 2)}</pre>) : (<p>Loading...</p>)}
-</section>
-<button onClick={logout}>Logout</button>
-  </div>;
+      <section className="page__section">
+        <h4>Auth context user</h4>
+        <pre>{JSON.stringify(user, null, 2)}</pre>
+      </section>
+
+      <section className="page__section">
+        <h4>/profile response</h4>
+        {profile ? (
+          <pre>{JSON.stringify(profile, null, 2)}</pre>
+        ) : (
+          <p className="page__status">Loading…</p>
+        )}
+      </section>
+
+      <button className="primary" onClick={logout} type="button">
+        Sign out
+      </button>
+    </div>
+  );
 }

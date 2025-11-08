@@ -17,7 +17,7 @@ export default function SalesOrders() {
       })
       .catch((err) => {
         if (!on) return;
-        setError(err?.reponse?.error || "Failed to load orders");
+        setError(err?.response?.data?.error || "Failed to load orders");
         setStatus("error");
       });
 
@@ -26,19 +26,42 @@ export default function SalesOrders() {
     };
   }, []);
 
-  if (status === "loading")
-    return <div style={{ padding: 24 }}>Loading orders…</div>;
-  if (status === "error")
-    return <div style={{ padding: 24, color: "crimson" }}>{error}</div>;
+  if (status === "loading") {
+    return (
+      <div className="page">
+        <section className="page__section">
+          <h2>Sales • Orders</h2>
+          <p className="page__status">Loading orders…</p>
+        </section>
+      </div>
+    );
+  }
+
+  if (status === "error") {
+    return (
+      <div className="page">
+        <section className="page__section">
+          <h2>Sales • Orders</h2>
+          <p className="page__status page__status--error">{error}</p>
+        </section>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ padding: 24 }}>
-      <h2>Sales • Orders</h2>
-      {list.length === 0 ? (
-        <p>No orders yet.</p>
-      ) : (
-        <pre>{JSON.stringify(list, null, 2)}</pre>
-      )}
+    <div className="page">
+      <section className="page__section">
+        <h2>Sales • Orders</h2>
+        <p className="page__status">Orders synced from the protected sales endpoint.</p>
+      </section>
+
+      <section className="page__section">
+        {list.length === 0 ? (
+          <p className="page__status">No orders yet.</p>
+        ) : (
+          <pre>{JSON.stringify(list, null, 2)}</pre>
+        )}
+      </section>
     </div>
   );
 }
