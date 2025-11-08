@@ -1,26 +1,21 @@
 import axios from 'axios'
+import Constants from 'expo-constants'
 
+const expoExtra = Constants?.expoConfig?.extra ?? {}
 const fallbackBaseUrl =
-  (typeof window !== 'undefined' && window.orderlyDesktop?.apiBaseUrl) ||
-  'http://localhost:3000/api'
+  process.env.EXPO_PUBLIC_API_URL || expoExtra.apiBaseUrl || 'http://localhost:3000/api'
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || fallbackBaseUrl,
-  withCredentials: true, // for refresh cookie
+  baseURL: fallbackBaseUrl,
+  withCredentials: true,
 })
 
-// Attach access token per request (set by AuthProvider)
 export function setAccessToken(token) {
   if (token) {
     api.defaults.headers.common.Authorization = `Bearer ${token}`
   } else {
     delete api.defaults.headers.common.Authorization
   }
-}
-
-export async function fetchMe() {
-  const r = await api.get('/me')
-  return r.data
 }
 
 let refreshing = null
